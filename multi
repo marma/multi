@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
 
 
-from sys import argv,exit,stdin
+from sys import argv,exit,stdin,stdout,stderr
 from multiprocessing import Pool
 from time import sleep
-from subprocess import run
+from subprocess import run,STDOUT,PIPE
 from io import StringIO,BytesIO
 from tempfile import TemporaryFile
-
-cmd=None
-cargv=None
 
 def work(value):
     with TemporaryFile() as tmp:
         tmp.write(value.encode('utf-8'))
         tmp.seek(0)
-        p = run([ cmd ] + cargv, stdin=tmp, capture_output=True)
+        p = run(argv[2:], stdin=tmp, stdout=PIPE, stderr=PIPE)
         p.check_returncode()
 
-        return p.stdout.decode('utf-8')
+        return (p.stdout.decode('utf-8'), p.stderr.decode('utf-8'))
 
 
 if __name__ == "__main__":
@@ -31,6 +28,7 @@ if __name__ == "__main__":
 
     with Pool(int(argv[1])) as pool:
         for p in pool.imap_unordered(work, stdin):
-            print(p, end='')
+            print(p[0], file=stdout, end='', flush=True)
+            print(p[1], file=stderr, end='', flush=True)
 
     
