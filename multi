@@ -4,7 +4,7 @@
 from sys import argv,exit,stdin
 from multiprocessing import Pool
 from time import sleep
-from subprocess import run
+from subprocess import run,PIPE,STDOUT
 from io import StringIO,BytesIO
 from tempfile import TemporaryFile
 
@@ -15,7 +15,7 @@ def work(value):
     with TemporaryFile() as tmp:
         tmp.write(value.encode('utf-8'))
         tmp.seek(0)
-        p = run([ cmd ] + cargv, stdin=tmp, capture_output=True)
+        p = run([ cmd ] + cargv, stdin=tmp, stdout=PIPE, stderr=STDOUT)
         p.check_returncode()
 
         return p.stdout.decode('utf-8')
